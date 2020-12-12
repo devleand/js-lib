@@ -37,8 +37,12 @@ DOM = {
     getVal: function (el) {
         return document.querySelector(el).value;
     },
-    setVal: function (el, val) {
-        document.querySelector(el).value = val;
+    setVal: function (el, val, isFind = true) {
+        if (isFind) {
+            document.querySelector(el).value = val;
+        } else {
+            el.value = val;
+        }
     },
 
     getTxt: function (el, isFind = true) {
@@ -59,8 +63,8 @@ DOM = {
     hasClass: function (el, className) {
         className = " " + className + " ";
 
-        let els = this.gets(el), l = els.length;
-        for (let i = 0; i < l; i++) {
+        let els = this.gets(el);
+        for (let i = 0; i < els.length; i++) {
             if ((" " + els[i].className + " ").replace(/[\n\t]/g, " ").indexOf(className) >= 0) {
                 return true;
             }
