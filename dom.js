@@ -2,16 +2,51 @@ DOM = {
     get: function (el) {
         return document.querySelector(el);
     },
-    gets: function (els) {
-        return document.querySelectorAll(els);
+    gets: function (selector, parent = null) {
+        if (Types.isNull(parent)) {
+            parent = document;
+        }
+        return parent.querySelectorAll(selector);
+    },
+    getParent: function (el, selector, isFind = true) {
+        if (isFind) {
+            el = this.get(el);
+        }
+        return el.closest(selector);
+    },
+    getChildren: function (el, selector, isFind = true) {
+        let dom_els, l;
+        if (isFind) {
+            dom_els = this.gets(el);
+            l       = dom_els.length;
+        } else {
+            if (Types.isNodeList(el)) {
+                dom_els = el;
+                l       = el.length;
+            } else {
+                dom_els = [ el ];
+                l       = 1;
+            }
+        }
+
+        let children = [];
+        for (let i = 0; i < l; i++) {
+            if (i == 0) {
+                children = this.gets(selector, dom_els[i]);
+            } else {
+                children.after(this.gets(selector, dom_els[i]));
+            }
+        }
+
+        return children;
     },
     create: function (el) {
         return document.createElement(el);
     },
 
-    // проверяет наличие элемента по селектору
-    isEl: function (el) {
-        return this.get(el) === null ? false : true;
+    // проверяет наличие элементов по селектору
+    isEl: function (selector) {
+        return this.gets(selector).length > 0 ? true : false;
     },
 
     // проверяет наличие атрибута у элемента
@@ -27,13 +62,22 @@ DOM = {
         }
     },
     setAttr: function (els, attr, val, isFind = true) {
+        let dom_els, l;
         if (isFind) {
-            let dom_els = this.gets(els), l = dom_els.length;
-            for (let i = 0; i < l; i++) {
-                dom_els[i].setAttribute(attr, val);
-            }
+            dom_els = this.gets(els);
+            l       = dom_els.length;
         } else {
-            els.setAttribute(attr, val);
+            if (Types.isNodeList(els)) {
+                dom_els = els;
+                l       = els.length;
+            } else {
+                dom_els = [ els ];
+                l       = 1;
+            }
+        }
+
+        for (let i = 0; i < l; i++) {
+            dom_els[i].setAttribute(attr, val);
         }
     },
 
@@ -41,13 +85,22 @@ DOM = {
         return document.querySelector(el).value;
     },
     setVal: function (els, val, isFind = true) {
+        let dom_els, l;
         if (isFind) {
-            let dom_els = this.gets(els), l = dom_els.length;
-            for (let i = 0; i < l; i++) {
-                dom_els[i].value = val;
-            }
+            dom_els = this.gets(els);
+            l       = dom_els.length;
         } else {
-            els.value = val;
+            if (Types.isNodeList(els)) {
+                dom_els = els;
+                l       = els.length;
+            } else {
+                dom_els = [ els ];
+                l       = 1;
+            }
+        }
+
+        for (let i = 0; i < l; i++) {
+            dom_els[i].value = val;
         }
     },
 
@@ -59,13 +112,22 @@ DOM = {
         }
     },
     setTxt: function (els, txt, isFind = true) {
+        let dom_els, l;
         if (isFind) {
-            let dom_els = this.gets(els), l = dom_els.length;
-            for (let i = 0; i < l; i++) {
-                dom_els[i].textContent = txt;
-            }
+            dom_els = this.gets(els);
+            l       = dom_els.length;
         } else {
-            els.textContent = txt;
+            if (Types.isNodeList(els)) {
+                dom_els = els;
+                l       = els.length;
+            } else {
+                dom_els = [ els ];
+                l       = 1;
+            }
+        }
+
+        for (let i = 0; i < l; i++) {
+            dom_els[i].textContent = txt;
         }
     },
 
@@ -108,13 +170,22 @@ DOM = {
     },
 
     addEventListener: function (els, event, handler, isIntercept = false, isFind = true) {
+        let dom_els, l;
         if (isFind) {
-            let dom_els = this.gets(els), l = dom_els.length;
-            for (let i = 0; i < l; i++) {
-                dom_els[i].addEventListener(event, handler, isIntercept);
-            }
+            dom_els = this.gets(els);
+            l       = dom_els.length;
         } else {
-            els.addEventListener(event, handler, isIntercept);
+            if (Types.isNodeList(els)) {
+                dom_els = els;
+                l       = els.length;
+            } else {
+                dom_els = [ els ];
+                l       = 1;
+            }
+        }
+
+        for (let i = 0; i < l; i++) {
+            dom_els[i].addEventListener(event, handler, isIntercept);
         }
     }
 };
