@@ -11,85 +11,110 @@ DOM = {
 
     // проверяет наличие элемента по селектору
     isEl: function (el) {
-        return document.querySelector(el) === null ? false : true;
+        return this.get(el) === null ? false : true;
     },
 
     // проверяет наличие атрибута у элемента
     hasAttr: function (el, attr) {
-        return document.querySelector(el).hasAttribute(attr);
+        return this.get(el).hasAttribute(attr);
     },
     // возвращает значение атрибута элемента
     getAttr: function (el, attr, isFind = true) {
         if (isFind) {
-            return document.querySelector(el).getAttribute(attr);
+            return this.get(el).getAttribute(attr);
         } else {
             return el.getAttribute(attr);
         }
     },
-    setAttr: function (el, attr, val, isFind = true) {
+    setAttr: function (els, attr, val, isFind = true) {
         if (isFind) {
-            return document.querySelector(el).setAttribute(attr, val);
+            let dom_els = this.gets(els), l = dom_els.length;
+            for (let i = 0; i < l; i++) {
+                dom_els[i].setAttribute(attr, val);
+            }
         } else {
-            return el.setAttribute(attr, val);
+            els.setAttribute(attr, val);
         }
     },
 
     getVal: function (el) {
         return document.querySelector(el).value;
     },
-    setVal: function (el, val, isFind = true) {
+    setVal: function (els, val, isFind = true) {
         if (isFind) {
-            document.querySelector(el).value = val;
+            let dom_els = this.gets(els), l = dom_els.length;
+            for (let i = 0; i < l; i++) {
+                dom_els[i].value = val;
+            }
         } else {
-            el.value = val;
+            els.value = val;
         }
     },
 
     getTxt: function (el, isFind = true) {
         if (isFind) {
-            return document.querySelector(el).textContent;
+            return this.get(el).textContent;
         } else {
             return el.textContent;
         }
     },
-    setTxt: function (el, txt, isFind = true) {
+    setTxt: function (els, txt, isFind = true) {
         if (isFind) {
-            document.querySelector(el).textContent = txt;
+            let dom_els = this.gets(els), l = dom_els.length;
+            for (let i = 0; i < l; i++) {
+                dom_els[i].textContent = txt;
+            }
         } else {
-            el.textContent = txt;
+            els.textContent = txt;
         }
     },
 
-    hasClass: function (el, className) {
+    hasClass: function (els, className) {
         className = " " + className + " ";
 
-        let els = this.gets(el);
-        for (let i = 0; i < els.length; i++) {
-            if ((" " + els[i].className + " ").replace(/[\n\t]/g, " ").indexOf(className) >= 0) {
+        let dom_els = this.gets(els), l = dom_els.length;
+        for (let i = 0; i < l; i++) {
+            if ((" " + dom_els[i].className + " ").replace(/[\n\t]/g, " ").indexOf(className) >= 0) {
                 return true;
             }
         }
 
         return false;
     },
-    classGetList: function (el) {
-        return this.get(el).classList;
-    },
-    classAdd: function (el, _class) {
-        this.classGetList(el).add(_class);
-    },
-
-    show: function (el) {
-        this.get(el).style.display = "block";
-    },
-    hide: function (el) {
-        this.get(el).style.display = "none";
-    },
-
-    addEventListener: function (el, event, handler, isIntercept = false, isFind = true) {
+    classGetList: function (el, isFind = true) {
         if (isFind) {
             el = this.get(el);
         }
-        el.addEventListener(event, handler, isIntercept);
+        return el.classList;
+    },
+    classAdd: function (els, _class) {
+        let dom_els = this.gets(els), l = dom_els.length;
+        for (let i = 0; i < l; i++) {
+            this.classGetList(dom_els[i], false).add(_class);
+        }
+    },
+
+    show: function (els) {
+        let dom_els = this.gets(els), l = dom_els.length;
+        for (let i = 0; i < l; i++) {
+            dom_els[i].style.display = "block";
+        }
+    },
+    hide: function (els) {
+        let dom_els = this.gets(els), l = dom_els.length;
+        for (let i = 0; i < l; i++) {
+            dom_els[i].style.display = "none";
+        }
+    },
+
+    addEventListener: function (els, event, handler, isIntercept = false, isFind = true) {
+        if (isFind) {
+            let dom_els = this.gets(els), l = dom_els.length;
+            for (let i = 0; i < l; i++) {
+                dom_els[i].addEventListener(event, handler, isIntercept);
+            }
+        } else {
+            els.addEventListener(event, handler, isIntercept);
+        }
     }
 };
