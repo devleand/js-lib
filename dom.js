@@ -81,8 +81,11 @@ DOM = {
         }
     },
 
-    getVal: function (el) {
-        return document.querySelector(el).value;
+    getVal: function (el, isFind = true) {
+        if (isFind) {
+            el = this.get(el);
+        }
+        return el.value;
     },
     setVal: function (els, val, isFind = true) {
         let dom_els, l;
@@ -186,6 +189,27 @@ DOM = {
 
         for (let i = 0; i < l; i++) {
             dom_els[i].addEventListener(event, handler, isIntercept);
+        }
+    },
+
+    trigger: function (els, event, isFind = true) {
+        let dom_els, l;
+        if (isFind) {
+            dom_els = this.gets(els);
+            l       = dom_els.length;
+        } else {
+            if (Types.isNodeList(els)) {
+                dom_els = els;
+                l       = els.length;
+            } else {
+                dom_els = [ els ];
+                l       = 1;
+            }
+        }
+
+        let e = new Event(event);
+        for (let i = 0; i < l; i++) {
+            dom_els[i].dispatchEvent(e);
         }
     }
 };
