@@ -1,4 +1,23 @@
 DOM = {
+    /**
+     * Returns a list of DOM items
+     *
+     * @param mixed     els
+     * @param bool      isFind
+     * @returns {NodeListOf<HTMLElementTagNameMap[*]> | *[]}
+     */
+    getElsList: function (els, isFind) {
+        if (isFind) {
+            els = this.gets(els);
+        } else {
+            if (!Types.isNodeList(els)) {
+                els = [ els ];
+            }
+        }
+
+        return els;
+    },
+
     get: function (el) {
         return document.querySelector(el);
     },
@@ -8,6 +27,7 @@ DOM = {
         }
         return parent.querySelectorAll(selector);
     },
+
     getParent: function (el, selector, isFind = true) {
         if (isFind) {
             el = this.get(el);
@@ -15,19 +35,7 @@ DOM = {
         return el.closest(selector);
     },
     getChildren: function (el, selector, isFind = true) {
-        let dom_els, l;
-        if (isFind) {
-            dom_els = this.gets(el);
-            l       = dom_els.length;
-        } else {
-            if (Types.isNodeList(el)) {
-                dom_els = el;
-                l       = el.length;
-            } else {
-                dom_els = [ el ];
-                l       = 1;
-            }
-        }
+        let dom_els = this.getElsList(el, isFind), l = dom_els.length;
 
         let children = [];
         for (let i = 0; i < l; i++) {
@@ -62,22 +70,25 @@ DOM = {
         }
     },
     setAttr: function (els, attr, val, isFind = true) {
-        let dom_els, l;
-        if (isFind) {
-            dom_els = this.gets(els);
-            l       = dom_els.length;
-        } else {
-            if (Types.isNodeList(els)) {
-                dom_els = els;
-                l       = els.length;
-            } else {
-                dom_els = [ els ];
-                l       = 1;
-            }
-        }
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
 
         for (let i = 0; i < l; i++) {
             dom_els[i].setAttribute(attr, val);
+        }
+    },
+
+    getProp: function (el, prop, isFind = true) {
+        if (isFind) {
+            return this.get(el)[prop];
+        } else {
+            return el[prop];
+        }
+    },
+    setProp: function (els, prop, val, isFind = true) {
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
+
+        for (let i = 0; i < l; i++) {
+            dom_els[i][prop] = val;
         }
     },
 
@@ -88,19 +99,7 @@ DOM = {
         return el.value;
     },
     setVal: function (els, val, isFind = true) {
-        let dom_els, l;
-        if (isFind) {
-            dom_els = this.gets(els);
-            l       = dom_els.length;
-        } else {
-            if (Types.isNodeList(els)) {
-                dom_els = els;
-                l       = els.length;
-            } else {
-                dom_els = [ els ];
-                l       = 1;
-            }
-        }
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
 
         for (let i = 0; i < l; i++) {
             dom_els[i].value = val;
@@ -115,19 +114,7 @@ DOM = {
         }
     },
     setTxt: function (els, txt, isFind = true) {
-        let dom_els, l;
-        if (isFind) {
-            dom_els = this.gets(els);
-            l       = dom_els.length;
-        } else {
-            if (Types.isNodeList(els)) {
-                dom_els = els;
-                l       = els.length;
-            } else {
-                dom_els = [ els ];
-                l       = 1;
-            }
-        }
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
 
         for (let i = 0; i < l; i++) {
             dom_els[i].textContent = txt;
@@ -152,10 +139,22 @@ DOM = {
         }
         return el.classList;
     },
-    classAdd: function (els, _class) {
-        let dom_els = this.gets(els), l = dom_els.length;
+    classAdd: function (els, ...classes) {
+        let dom_els = this.gets(els), l = dom_els.length, kol_cl = classes.length;
         for (let i = 0; i < l; i++) {
-            this.classGetList(dom_els[i], false).add(_class);
+            let class_list = this.classGetList(dom_els[i], false);
+            for (let j = 0; j < kol_cl; j++) {
+                class_list.add(classes[j]);
+            }
+        }
+    },
+    classRemove: function (els, ...classes) {
+        let dom_els = this.gets(els), l = dom_els.length, kol_cl = classes.length;
+        for (let i = 0; i < l; i++) {
+            let class_list = this.classGetList(dom_els[i], false);
+            for (let j = 0; j < kol_cl; j++) {
+                class_list.remove(classes[j]);
+            }
         }
     },
 
@@ -173,19 +172,7 @@ DOM = {
     },
 
     addEventListener: function (els, event, handler, isIntercept = false, isFind = true) {
-        let dom_els, l;
-        if (isFind) {
-            dom_els = this.gets(els);
-            l       = dom_els.length;
-        } else {
-            if (Types.isNodeList(els)) {
-                dom_els = els;
-                l       = els.length;
-            } else {
-                dom_els = [ els ];
-                l       = 1;
-            }
-        }
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
 
         for (let i = 0; i < l; i++) {
             dom_els[i].addEventListener(event, handler, isIntercept);
@@ -193,19 +180,7 @@ DOM = {
     },
 
     trigger: function (els, event, isFind = true) {
-        let dom_els, l;
-        if (isFind) {
-            dom_els = this.gets(els);
-            l       = dom_els.length;
-        } else {
-            if (Types.isNodeList(els)) {
-                dom_els = els;
-                l       = els.length;
-            } else {
-                dom_els = [ els ];
-                l       = 1;
-            }
-        }
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
 
         let e = new Event(event);
         for (let i = 0; i < l; i++) {
