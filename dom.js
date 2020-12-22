@@ -58,8 +58,11 @@ DOM = {
     },
 
     // проверяет наличие атрибута у элемента
-    hasAttr: function (el, attr) {
-        return this.get(el).hasAttribute(attr);
+    hasAttr: function (el, attr, isFind = true) {
+        if (isFind) {
+            el = this.get(el);
+        }
+        return el.hasAttribute(attr);
     },
     // возвращает значение атрибута элемента
     getAttr: function (el, attr, isFind = true) {
