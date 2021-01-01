@@ -10,7 +10,7 @@ DOM = {
         if (isFind) {
             els = this.gets(els);
         } else {
-            if (!Types.isNodeList(els)) {
+            if (!Types.isNodeList(els) && !(els instanceof Array)) {
                 els = [ els ];
             }
         }
@@ -18,14 +18,24 @@ DOM = {
         return els;
     },
 
-    get: function (el) {
-        return document.querySelector(el);
+    get: function (el, parent = null) {
+        if (Types.isNull(parent)) {
+            parent = document;
+        }
+        return parent.querySelector(el);
     },
     gets: function (selector, parent = null) {
         if (Types.isNull(parent)) {
             parent = document;
         }
         return parent.querySelectorAll(selector);
+    },
+
+    getClone: function (el, deep = true, isFind = true) {
+        if (isFind) {
+            el = this.get(el);
+        }
+        return el.cloneNode(deep);
     },
 
     getParent: function (el, selector, isFind = true) {
@@ -39,10 +49,9 @@ DOM = {
 
         let children = [];
         for (let i = 0; i < l; i++) {
-            if (i == 0) {
-                children = this.gets(selector, dom_els[i]);
-            } else {
-                children.after(this.gets(selector, dom_els[i]));
+            let current = this.gets(selector, dom_els[i]), count = current.length;
+            for (let j = 0; j < count; j++) {
+                children.push(current[j]);
             }
         }
 
@@ -55,6 +64,13 @@ DOM = {
     // проверяет наличие элементов по селектору
     isEl: function (selector) {
         return this.gets(selector).length > 0 ? true : false;
+    },
+
+    getTagName: function (el, isFind = true) {
+        if (isFind) {
+            el = DOM.get(el);
+        }
+        return el.tagName;
     },
 
     // проверяет наличие атрибута у элемента
@@ -111,10 +127,9 @@ DOM = {
 
     getTxt: function (el, isFind = true) {
         if (isFind) {
-            return this.get(el).textContent;
-        } else {
-            return el.textContent;
+            el = this.get(el);
         }
+        return el.textContent;
     },
     setTxt: function (els, txt, isFind = true) {
         let dom_els = this.getElsList(els, isFind), l = dom_els.length;
@@ -124,10 +139,24 @@ DOM = {
         }
     },
 
-    hasClass: function (els, className) {
+    getHTML: function (el, isFind = true) {
+        if (isFind) {
+            el = this.get(el);
+        }
+        return el.innerHTML;
+    },
+    setHTML: function (els, html, isFind = true) {
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
+
+        for (let i = 0; i < l; i++) {
+            dom_els[i].innerHTML = html;
+        }
+    },
+
+    hasClass: function (els, className, isFind = true) {
         className = " " + className + " ";
 
-        let dom_els = this.gets(els), l = dom_els.length;
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
         for (let i = 0; i < l; i++) {
             if ((" " + dom_els[i].className + " ").replace(/[\n\t]/g, " ").indexOf(className) >= 0) {
                 return true;
@@ -161,14 +190,14 @@ DOM = {
         }
     },
 
-    show: function (els) {
-        let dom_els = this.gets(els), l = dom_els.length;
+    show: function (els, isFind = true) {
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
         for (let i = 0; i < l; i++) {
             dom_els[i].style.display = "block";
         }
     },
-    hide: function (els) {
-        let dom_els = this.gets(els), l = dom_els.length;
+    hide: function (els, isFind = true) {
+        let dom_els = this.getElsList(els, isFind), l = dom_els.length;
         for (let i = 0; i < l; i++) {
             dom_els[i].style.display = "none";
         }
