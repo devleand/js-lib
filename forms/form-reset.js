@@ -1,4 +1,4 @@
-let FormReset = function (els, isResetAll = false) {
+var FormReset = function (els, isResetAll = false) {
     if (!DOM.isEl(els)) {
         throw `Target elements with selector "${els}" does not exists!`;
     }
@@ -8,7 +8,8 @@ let FormReset = function (els, isResetAll = false) {
         this.isResetAll = isResetAll;
     }
 
-    DOM.addEventListener(els, 'click', this);
+    let body = new DOMElements('body');
+    body.on('click', els, this);
 };
 
 FormReset.prototype = {
@@ -78,7 +79,7 @@ FormReset.prototype = {
     },
 
     handleEvent: function (e) {
-        let form = DOM.getParent(e.currentTarget, "form", false);
+        let form = DOM.getParent(e.target, "form", false);
         this.formReset(form);
     }
 };

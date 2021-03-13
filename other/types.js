@@ -1,31 +1,31 @@
-Types = {
+var Types = {
   typeOf: function (val) {
       return (typeof(val)).toLowerCase();
   },
 
   isNull: function (val) {
-      return val === null ? true : false;
+      return val === null;
   },
   isUndefined: function (val) {
-      return this.typeOf(val) == "undefined" ? true : false;
+      return this.typeOf(val) == "undefined";
   },
   isFunction: function (val) {
-      return this.typeOf(val) == "function" ? true : false;
+      return this.typeOf(val) == "function";
   },
   isObject: function (val) {
-        return this.typeOf(val) == "object" ? true : false;
+        return this.typeOf(val) == "object";
   },
   isArray: function (val) {
-      return this.typeOf(val) == "array" ? true : false;
+      return this.typeOf(val) == "array" || val instanceof Array;
   },
   isString: function (val) {
-      return this.typeOf(val) == "string" ? true : false;
+      return this.typeOf(val) == "string";
   },
   isNumber: function (val) {
-      return this.typeOf(val) == "number" ? true : false;
+      return this.typeOf(val) == "number";
   },
   isBool: function (val) {
-      return this.typeOf(val) == "boolean" ? true : false;
+      return this.typeOf(val) == "boolean";
   },
 
   isNodeList: function (val) {
@@ -40,7 +40,6 @@ Types = {
       }
   },
   toBool: function (val) {
-      let errtext = "The passed value cannot be converted to a value of type Boolean!";
       if (isNaN(val)) {
           if (this.isString(val)) {
               if (val == "false") {
@@ -49,7 +48,7 @@ Types = {
                   return true;
               }
           } else {
-              throw errtext;
+              throw "The passed value cannot be converted to a value of type Boolean";
           }
 
       } else {
