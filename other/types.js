@@ -42,11 +42,7 @@ var Types = {
   toBool: function (val) {
       if (isNaN(val)) {
           if (this.isString(val)) {
-              if (val == "false") {
-                  return false;
-              } else {
-                  return true;
-              }
+              return val == "true";
           } else {
               throw "The passed value cannot be converted to a value of type Boolean";
           }
