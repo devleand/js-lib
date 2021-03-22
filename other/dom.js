@@ -5,6 +5,7 @@
 var DOMElements = function (els) {
     this.els = els;
     this.eventList = new DOMEventList(this);
+    if (Types.isString(els)) this.selector = els;
 };
 DOMElements.prototype = {
     /**
@@ -17,6 +18,11 @@ DOMElements.prototype = {
      * @type {DOMEventList}
      */
     _eventList: null,
+
+    /**
+     * @type {undefined|string}
+     */
+    selector: undefined,
 
     set els (value) {
         this._els = DOMElements.getAsList(value);
@@ -35,6 +41,9 @@ DOMElements.prototype = {
         return this._eventList;
     },
 
+    /**
+     * @return {number}
+     */
     get length () {
         return this.els.length;
     },
@@ -266,10 +275,33 @@ DOMElements.prototype = {
     },
 
     /**
+     * @param {Element} nodes
+     */
+    appendChild: function (...nodes) {
+        this.forEach(function (el) {
+            el.appendChild(...nodes);
+        });
+    },
+    /**
+     * @param {Node | DOMString} nodes
+     */
+    append: function (...nodes) {
+        this.forEach(function (el) {
+            el.append(...nodes);
+        });
+    },
+    remove: function () {
+        this.forEach(function (el) {
+            el.remove();
+        });
+    },
+
+    /**
      * @param {string} event
-     * @param {string, function} prop1
+     * @param {string, function, object} prop1
      * @param {null, function, object, boolean} prop2
      * @param {null, object, boolean} prop3
+     * @return {DOMElements}
      */
     on: function (event, prop1, prop2 = null, prop3 = null) {
         let props = [ prop1 ];
@@ -301,11 +333,21 @@ DOMElements.prototype = {
         }
 
         this.eventList.addEventListener(event, new DOMEventListener(handler, options, target));
+
+        return this;
     },
 
     trigger: function (event) {
         this.eventList.trigger(event);
     }
+};
+
+/**
+ * @param el
+ * @return {DOMElements}
+ */
+DOMElements.make = function (el) {
+    return new DOMElements(el);
 };
 
 DOMElements.helpers = {
@@ -346,8 +388,11 @@ DOMElements.getAsList = function (els) {
         els = this.gets(els);
     } else if (els instanceof  DOMElements) {
         els = els.els;
-    } else if (!Types.isNodeList(els) && !(els instanceof Array)) {
+    } else if (Types.isElement(els)) {
         els = [ els ];
+    } else if (! Types.isNodeList(els) && ! Types.isArray(els)) {
+        console.error(els);
+        throw "Undefined element";
     }
 
     return els;
@@ -459,7 +504,7 @@ DOMEventList.prototype = {
 };
 
 /**
- * @param {function} handler
+ * @param {function, object} handler
  * @param {Object | Boolean} options
  * @param {null | string} target
  * @constructor
@@ -471,7 +516,7 @@ var DOMEventListener = function (handler, options = {}, target = null) {
 };
 DOMEventListener.prototype = {
     /**
-     * @type {Function}
+     * @type {Function | object}
      */
     handler: null,
     /**

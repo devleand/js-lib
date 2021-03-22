@@ -28,6 +28,10 @@ var Types = {
       return this.typeOf(val) == "boolean";
   },
 
+  isElement: function (val) {
+      return val instanceof Element;
+  },
+
   isNodeList: function (val) {
       return val instanceof NodeList;
   },
