@@ -1,17 +1,37 @@
 let ChangePageImitation = {
-    targetEl: 'body',
+    /**
+     * @type {DOMElements}
+     */
+    targetEl: undefined,
+    /**
+     * @return {DOMElements}
+     */
     getTargetEl: function () {
         return this.targetEl;
     },
 
+    /**
+     * @type {string}
+     */
     method: 'GET',
+    /**
+     * @return {string}
+     */
     getDataURL: function () {
         return '';
     },
+    /**
+     * @return {?any}
+     */
     getDataBody: function () {
         return null;
     },
-    getNewPageUrl: function () {},
+    /**
+     * @return {string}
+     */
+    getNewPageUrl: function () {
+        return '';
+    },
 
     getNewPageTargetHTML: function (callback) {
         let url_data = this.getDataURL();
@@ -32,7 +52,11 @@ let ChangePageImitation = {
                 if (Types.isNull(response)) {
                     return;
                 }
-                callback(DOM.getHTML(DOM.get(_this.getTargetEl(), response), false));
+
+                response = new DOMElements(response);
+                let target = _this.getTargetEl().selector ? response.children(_this.getTargetEl().selector) : response;
+
+                callback(target.html());
             } else {
                 alert("Request failed!");
                 throw `HTTP request failed! URL: ${url}. Status: ${this.status} ${this.statusText}`;
@@ -65,19 +89,24 @@ let ChangePageImitation = {
     }
 };
 
-let SubmitFormImitation = function (targetEl, formObj) {
+/**
+ * @param {DOMElements} targetEl
+ * @param {DOMElements} linkObj
+ * @constructor
+ */
+var SubmitFormImitation = function (targetEl, formObj) {
     this.__proto__ = ChangePageImitation;
     this.targetEl = targetEl;
 
     this.form   = formObj;
-    this.action = DOM.getAttr(formObj, 'action', false);
-    this.method = DOM.hasAttr(formObj, 'method', false) ? DOM.getAttr(formObj, 'method', false).toUpperCase() : 'GET';
+    this.action = formObj.attr('action');
+    this.method = formObj.hasAttr('method') ? formObj.attr('method').toUpperCase() : 'GET';
 
     this.getNewPageUrl = function () {
         return this.action;
     };
 
-    this.dataURL = new URLSearchParams(new FormData(formObj)).toString();
+    this.dataURL = new URLSearchParams(new FormData(formObj.get(0))).toString();
     this.getDataURL = function () {
         return this.dataURL;
     };
@@ -85,27 +114,44 @@ let SubmitFormImitation = function (targetEl, formObj) {
     this.changePage();
 };
 
-let FollowingLinkImitation = function (targetEl, linkObj) {
+/**
+ * @param {DOMElements} targetEl
+ * @param {DOMElements} linkObj
+ * @constructor
+ */
+var FollowingLinkImitation = function (targetEl, linkObj) {
     this.__proto__ = ChangePageImitation;
     this.targetEl = targetEl;
+
+    this.getNewPageUrl = function () {
+        return this.getTargetEl().attr('href');
+    };
 };
 
-let DynamicPage = function (targetEl = 'body') {
-    if (!DOM.isEl(targetEl)) {
+/**
+ * @param {(string | DOMElements | NodeList | Element)} targetEl
+ * @constructor
+ */
+var DynamicPage = function (targetEl = 'body') {
+    targetEl = new DOMElements(targetEl);
+    if (targetEl.length) {
         throw "Target element not found!";
     }
     this.targetEl = targetEl;
 
-    DOM.addEventListener('html', 'click', this);
+    (new DOMElements('html')).on('click', this);
 };
 
 DynamicPage.prototype = {
+    /**
+     * @type {DOMElements}
+     */
     targetEl: undefined,
 
     /**
      * Если хотите, чтобы при нажатии на элемент смена страницы не имитировалась, присвойте ему данный класс.
      *
-     * @var string
+     * @type {string}
      */
     notSubmitClass: 'dynamic-page-not-submit',
 
@@ -114,34 +160,60 @@ DynamicPage.prototype = {
      * минуя автоматическое определение, присвойте ему данный класс. Однако не стоит забывать,
      * что элемент должен быть вложен в рабочую форму или иметь соответствующий атрибут href.
      *
-     * @var string
+     * @type {string}
      */
     submitClass: 'dynamic-page-submit',
 
+    /**
+     * @type {string}
+     */
     formImitationSelector: '.form-imitation',
 
+    /**
+     * @return {DOMElements}
+     */
     getTargetEl: function () {
         return this.targetEl;
     },
 
+    /**
+     * @param {DOMElements} elObj
+     * @return {string}
+     */
     getTagName: function (elObj) {
-        return DOM.getTagName(elObj, false).toLowerCase();
+        return elObj.tagName.toLowerCase();
     },
 
+    /**
+     * @param {string} tagName
+     * @return {boolean}
+     */
     isTagButton: function (tagName) {
         return tagName == 'button';
     },
 
+    /**
+     * @param {string} tagName
+     * @return {boolean}
+     */
     isTagLink: function (tagName) {
         return tagName == 'a';
     },
 
+    /**
+     * @param {DOMElements} elObj
+     * @return {boolean}
+     */
     isTypeSubmit: function (elObj) {
-        return DOM.getAttr(elObj, 'type', false).toLowerCase() == 'submit';
+        return elObj.attr('type').toLowerCase() == 'submit';
     },
 
+    /**
+     * @param {DOMElements} elObj
+     * @return {boolean}
+     */
     isLinkChangePage: function (elObj) {
-        let href = DOM.getAttr(elObj, 'href', false);
+        let href = elObj.attr('href');
         if (href) {
             return href.substring(0, 2) != '#';
         } else {
@@ -152,16 +224,16 @@ DynamicPage.prototype = {
     /**
      * Возвращает true, если переданный элемент должен вызывать смену страницы или false в противном случае.
      *
-     * @param Element elObj
+     * @param {DOMElements} elObj
      *
-     * @return boolean
+     * @return {boolean}
      */
     isElChangePage: function (elObj) {
-        if (Types.isNull(DOM.getParent(elObj, this.getTargetEl(), false))) {
+        if (Types.isNull(elObj.parent(this.getTargetEl()))) {
             return false;
         }
 
-        if (DOM.hasClass(elObj, this.submitClass, false)) {
+        if (elObj.hasClass(this.submitClass)) {
             return true;
         }
 
@@ -173,48 +245,60 @@ DynamicPage.prototype = {
         }
     },
 
+    /**
+     * @param {DOMElements} imitationObj
+     * @return {DOMElements}
+     */
     getRealFormForImitation: function (imitationObj) {
-        let real_form = DOM.create('form');
+        let real_form = DOMElements.create('form');
 
         let attr = 'method';
-        DOM.setAttr(real_form, attr, DOM.getAttr(imitationObj, attr, false), false);
+        real_form.attr(attr, imitationObj.attr(attr));
         attr = 'action';
-        DOM.setAttr(real_form, attr, DOM.getAttr(imitationObj, attr, false), false);
+        real_form.attr(attr, imitationObj.attr(attr));
 
+        /**
+         * @param {DOMElements} real_form
+         * @param {DOMElements} inputs
+         */
         function realFormAppendInputs(real_form, inputs) {
-            for (let i = 0; i < inputs.length; i++) {
-                let input = inputs[i];
-                let input_clone = DOM.getClone(input, true, false);
-                DOM.setVal(input_clone, DOM.getVal(input, false), false);
+            inputs.forEach(function (input) {
+                input = new DOMElements(input);
+                let input_clone = input.clone();
+                input_clone.val(input.val());
                 real_form.appendChild(input_clone);
-            }
+            });
         }
 
-        realFormAppendInputs(real_form, DOM.gets('input', imitationObj));
-        realFormAppendInputs(real_form, DOM.gets('select', imitationObj));
-        realFormAppendInputs(real_form, DOM.gets('textarea', imitationObj));
-        realFormAppendInputs(real_form, DOM.gets('button', imitationObj));
+        realFormAppendInputs(real_form, imitationObj.children('input'));
+        realFormAppendInputs(real_form, imitationObj.children('select'));
+        realFormAppendInputs(real_form, imitationObj.children('textarea'));
+        realFormAppendInputs(real_form, imitationObj.children('button'));
 
         return real_form;
     },
 
+    /**
+     * @param {DOMElements} elObj
+     * @return {DOMElements}
+     */
     getSubmitForm: function (elObj) {
         let form;
-        if (DOM.hasAttr(elObj, 'form', false)) {
-            form = DOM.get('#' + DOM.getAttr(elObj, 'form', false));
+        if (elObj.hasAttr('form')) {
+            form = new DOMElements('#' + elObj.attr('form'));
             if (this.getTagName(form) != 'form') {
                 form = this.getRealFormForImitation(form);
             }
         } else {
-            let form_imitation = DOM.getParent(elObj, this.formImitationSelector, false);
-            form = Types.isNull(form_imitation) ? DOM.getParent(elObj, 'form', false) : this.getRealFormForImitation(form_imitation);
+            let form_imitation = elObj.parent(this.formImitationSelector);
+            form = Types.isNull(form_imitation) ? elObj.parent('form') : this.getRealFormForImitation(form_imitation);
         }
 
         return form;
     },
 
     handleEvent: function (e) {
-        let element = e.target;
+        let element = new DOMElements(e.target);
 
         if (!this.isElChangePage(element)) {
             return;
