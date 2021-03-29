@@ -383,7 +383,7 @@ DOMElements.gets = function (selector, parent = null) {
 };
 
 /**
- * @returns {(NodeList | Array)}
+ * @returns {(NodeList | Array<Element> | Array<Node>)}
  */
 DOMElements.getAsList = function (els) {
     if (Types.isString(els)) {
@@ -392,7 +392,20 @@ DOMElements.getAsList = function (els) {
         els = els.els;
     } else if (Types.isElement(els)) {
         els = [ els ];
-    } else if (! Types.isNodeList(els) && ! Types.isArray(els)) {
+    } else if (Types.isArray(els)) {
+        let nodes = [];
+
+        els.forEach(function (el) {
+            el = DOMElements.getAsList(el);
+            if (Types.isArray(el)) {
+                nodes = nodes.concat(el);
+            } else {
+                nodes.push(el);
+            }
+        });
+
+        return nodes;
+    } else if (! Types.isNodeList(els)) {
         console.error(els);
         throw "Undefined elements";
     }
